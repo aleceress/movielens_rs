@@ -6,7 +6,7 @@ import pickle
 from tqdm import tqdm
 from py2neo import bulk
 import gc
-
+import getpass
 
 GENRES = [
     "Action",
@@ -165,7 +165,10 @@ def create_bulk_relationships(
 
 
 # creates connection with graph
-graph = Graph("bolt://localhost:7687", auth=("neo4j", "dbms"))
+username = input("Enter username: ")
+password = getpass.getpass('Enter password: ')
+port = input("Enter Neo4j listening port: ")
+graph = Graph(f"bolt://localhost:{port}", auth=(username, password))
 
 
 if (
@@ -247,7 +250,7 @@ create_node_index("genre_index", "Genre", "id")
 
 
 create_relationship_index("rates_index", "RATES", "score")
-create_relationship_index("describes_index", "DESCRIBES", "relevance")
+create_relationship_index("has_category_index", "HAS_CATEGORY", "relevance")
 
 print("Generating (Movie)-HAS_GENRE->(Genre) relationships...")
 
@@ -285,10 +288,9 @@ gc.collect()
 
 categories_scores = pd.read_csv("data/genome-scores.csv")
 
-print("Generating bulk data (Category)-[:DESCRIBES]->(Movie)...")
+print("Generating bulk data (Movie)-[:HAS_CATEGORY]->(Category)...")
 categories_scores = categories_scores[categories_scores.relevance >= 0.4]
 
-categories_scores = categories_scores[["tagId", "movieId", "relevance"]]
 categories_scores["tagId"] = categories_scores["tagId"].apply(
     lambda id: categories_uuid_associations[id]
 )
@@ -305,9 +307,9 @@ gc.collect()
 print("Generating relationships from data...")
 create_bulk_relationships(
     categories_scores_relationships_data,
-    "DESCRIBES",
-    ("Category", "id"),
+    "HAS_CATEGORY",
     ("Movie", "id"),
+    ("Category", "id"),
     ["relevance"],
 )
 
