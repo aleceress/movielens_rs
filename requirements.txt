@@ -1,4 +1,0 @@
-ipykernel
-pandas
-py2neo
-tqdm
