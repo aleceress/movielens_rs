@@ -1,0 +1,13 @@
+ipykernel
+pandas
+py2neo
+tqdm
+matplotlib.pyplot
+numpy
+getpass
+time
+importlib
+re
+uuid
+pickle
+gc
